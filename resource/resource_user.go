@@ -24,13 +24,13 @@ func (s UserResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 
 	for _, user := range users {
 		// get all sweets for the user
-		user.Chocolates = []*model.Chocolate{}
+		user.Chocolates = []model.Chocolate{}
 		for _, chocolateID := range user.ChocolatesIDs {
 			choc, err := s.ChocStorage.GetOne(chocolateID)
 			if err != nil {
 				return &Response{}, err
 			}
-			user.Chocolates = append(user.Chocolates, &choc)
+			user.Chocolates = append(user.Chocolates, choc)
 		}
 		result = append(result, *user)
 	}
@@ -123,13 +123,13 @@ func (s UserResource) FindOne(ID string, r api2go.Request) (api2go.Responder, er
 		return &Response{}, api2go.NewHTTPError(err, err.Error(), http.StatusNotFound)
 	}
 
-	user.Chocolates = []*model.Chocolate{}
+	user.Chocolates = []model.Chocolate{}
 	for _, chocolateID := range user.ChocolatesIDs {
 		choc, err := s.ChocStorage.GetOne(chocolateID)
 		if err != nil {
 			return &Response{}, err
 		}
-		user.Chocolates = append(user.Chocolates, &choc)
+		user.Chocolates = append(user.Chocolates, choc)
 	}
 	return &Response{Res: user}, nil
 }

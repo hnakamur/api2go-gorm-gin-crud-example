@@ -11,11 +11,11 @@ import (
 type User struct {
 	ID int64 `jsonapi:"-"`
 	//rename the username field to user-name.
-	Username      string       `jsonapi:"name=user-name"`
-	PasswordHash  string       `jsonapi:"-"`
-	Chocolates    []*Chocolate `jsonapi:"-"`
-	ChocolatesIDs []string     `jsonapi:"-"`
-	exists        bool
+	Username      string      `jsonapi:"name=user-name"`
+	PasswordHash  string      `jsonapi:"-"`
+	Chocolates    []Chocolate `jsonapi:"-" gorm:"many2many:user_chocolates"`
+	ChocolatesIDs []string    `jsonapi:"-" sql:"-"`
+	exists        bool        `sql:"-"`
 }
 
 // GetID to satisfy jsonapi.MarshalIdentifier interface

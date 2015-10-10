@@ -4,23 +4,31 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 )
 
 // NewUserStorage initializes the storage
-func NewUserStorage() *UserStorage {
-	return &UserStorage{make(map[int64]*model.User), 1}
+func NewUserStorage(db *gorm.DB) *UserStorage {
+	return &UserStorage{db}
 }
 
 // UserStorage stores all users
 type UserStorage struct {
-	users   map[int64]*model.User
-	idCount int64
+	db *gorm.DB
 }
 
 // GetAll returns the user map (because we need the ID as key too)
 func (s UserStorage) GetAll() map[int64]*model.User {
-	return s.users
+	var users []model.User
+	s.db.Find(&users)
+
+	userMap := make(map[int64]*model.User)
+	for i, _ := range users {
+		u := &users[i]
+		userMap[u.ID] = u
+	}
+	return userMap
 }
 
 // GetOne user
@@ -29,19 +37,34 @@ func (s UserStorage) GetOne(id string) (model.User, error) {
 	if err != nil {
 		return model.User{}, fmt.Errorf("User id must be integer: %s", id)
 	}
-	user, ok := s.users[intID]
-	if ok {
-		return *user, nil
-	}
+	return s.getOneWithAssociations(intID)
+}
 
-	return model.User{}, fmt.Errorf("User for id %s not found", id)
+func (s UserStorage) getOneWithAssociations(id int64) (model.User, error) {
+	var user model.User
+	s.db.First(&user, id)
+	s.db.Model(&user).Related(&user.Chocolates, "Chocolates")
+	if err := s.db.Error; err == gorm.RecordNotFound {
+		return model.User{}, fmt.Errorf("User for id %d not found", id)
+	} else if err != nil {
+		return model.User{}, err
+	}
+	user.ChocolatesIDs = make([]string, len(user.Chocolates))
+	for i, choc := range user.Chocolates {
+		user.ChocolatesIDs[i] = choc.GetID()
+	}
+	return user, nil
 }
 
 // Insert a user
 func (s *UserStorage) Insert(c model.User) string {
-	c.ID = s.idCount
-	s.users[c.ID] = &c
-	s.idCount++
+	c.Chocolates = make([]model.Chocolate, len(c.ChocolatesIDs))
+	err := s.updateChocolatesByChocolatesIDs(&c)
+	if err != nil {
+		// TODO: return the error instead of panic
+		panic(err)
+	}
+	s.db.Create(&c)
 	return c.GetID()
 }
 
@@ -51,22 +74,62 @@ func (s *UserStorage) Delete(id string) error {
 	if err != nil {
 		return fmt.Errorf("User id must be integer: %s", id)
 	}
-	_, exists := s.users[intID]
-	if !exists {
+
+	var user model.User
+	s.db.First(&user, intID)
+	if err := s.db.Error; err == gorm.RecordNotFound {
 		return fmt.Errorf("User with id %s does not exist", id)
 	}
-	delete(s.users, intID)
+	s.db.Delete(&user)
 
-	return nil
+	return s.db.Error
 }
 
 // Update a user
 func (s *UserStorage) Update(c model.User) error {
-	_, exists := s.users[c.ID]
-	if !exists {
-		return fmt.Errorf("User with id %s does not exist", c.ID)
+	user, err := s.getOneWithAssociations(c.ID)
+	if err != nil {
+		return err
 	}
-	s.users[c.ID] = &c
 
+	user.Username = c.Username
+	user.PasswordHash = c.PasswordHash
+	var chocAssocsToDelete []model.Chocolate
+	for i, chocID := range user.ChocolatesIDs {
+		if indexOf(chocID, c.ChocolatesIDs) == -1 {
+			chocAssocsToDelete = append(chocAssocsToDelete, user.Chocolates[i])
+		}
+	}
+	if len(chocAssocsToDelete) > 0 {
+		s.db.Model(&user).Association("Chocolates").Delete(chocAssocsToDelete)
+	}
+
+	user.ChocolatesIDs = c.ChocolatesIDs
+	err = s.updateChocolatesByChocolatesIDs(&user)
+	if err != nil {
+		return err
+	}
+	s.db.Save(&user)
+	return s.db.Error
+}
+
+func indexOf(s string, items []string) int {
+	for i, item := range items {
+		if s == item {
+			return i
+		}
+	}
+	return -1
+}
+
+func (s *UserStorage) updateChocolatesByChocolatesIDs(u *model.User) error {
+	u.Chocolates = make([]model.Chocolate, len(u.ChocolatesIDs))
+	for i, chocID := range u.ChocolatesIDs {
+		intID, err := strconv.ParseInt(chocID, 10, 64)
+		if err != nil {
+			return err
+		}
+		s.db.First(&u.Chocolates[i], intID)
+	}
 	return nil
 }

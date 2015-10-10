@@ -2,48 +2,28 @@ package storage
 
 import (
 	"fmt"
-	"sort"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 )
 
-// sorting
-type byID []model.Chocolate
-
-func (c byID) Len() int {
-	return len(c)
-}
-
-func (c byID) Swap(i, j int) {
-	c[i], c[j] = c[j], c[i]
-}
-
-func (c byID) Less(i, j int) bool {
-	return c[i].ID < c[j].ID
-}
-
 // NewChocolateStorage initializes the storage
-func NewChocolateStorage() *ChocolateStorage {
-	return &ChocolateStorage{make(map[int64]*model.Chocolate), 1}
+func NewChocolateStorage(db *gorm.DB) *ChocolateStorage {
+	return &ChocolateStorage{db}
 }
 
 // ChocolateStorage stores all of the tasty chocolate, needs to be injected into
 // User and Chocolate Resource. In the real world, you would use a database for that.
 type ChocolateStorage struct {
-	chocolates map[int64]*model.Chocolate
-	idCount    int64
+	db *gorm.DB
 }
 
 // GetAll of the chocolate
 func (s ChocolateStorage) GetAll() []model.Chocolate {
-	result := []model.Chocolate{}
-	for key := range s.chocolates {
-		result = append(result, *s.chocolates[key])
-	}
-
-	sort.Sort(byID(result))
-	return result
+	var chocolates []model.Chocolate
+	s.db.Order("id").Find(&chocolates)
+	return chocolates
 }
 
 // GetOne tasty chocolate
@@ -52,19 +32,17 @@ func (s ChocolateStorage) GetOne(id string) (model.Chocolate, error) {
 	if err != nil {
 		return model.Chocolate{}, fmt.Errorf("Chocolate id must be integer: %s", id)
 	}
-	choc, ok := s.chocolates[intID]
-	if ok {
-		return *choc, nil
+	var choc model.Chocolate
+	s.db.First(&choc, intID)
+	if err := s.db.Error; err == gorm.RecordNotFound {
+		return model.Chocolate{}, fmt.Errorf("Chocolate for id %s not found", id)
 	}
-
-	return model.Chocolate{}, fmt.Errorf("Chocolate for id %s not found", id)
+	return choc, nil
 }
 
 // Insert a fresh one
 func (s *ChocolateStorage) Insert(c model.Chocolate) string {
-	c.ID = s.idCount
-	s.chocolates[c.ID] = &c
-	s.idCount++
+	s.db.Create(&c)
 	return c.GetID()
 }
 
@@ -74,22 +52,28 @@ func (s *ChocolateStorage) Delete(id string) error {
 	if err != nil {
 		return fmt.Errorf("Chocolate id must be integer: %s", id)
 	}
-	_, exists := s.chocolates[intID]
-	if !exists {
+
+	var choc model.Chocolate
+	s.db.First(&choc, intID)
+	if err := s.db.Error; err == gorm.RecordNotFound {
 		return fmt.Errorf("Chocolate with id %s does not exist", id)
 	}
-	delete(s.chocolates, intID)
+	s.db.Delete(&choc)
 
-	return nil
+	return s.db.Error
 }
 
 // Update updates an existing chocolate
 func (s *ChocolateStorage) Update(c model.Chocolate) error {
-	_, exists := s.chocolates[c.ID]
-	if !exists {
+	var choc model.Chocolate
+	s.db.First(&choc, c.ID)
+	if err := s.db.Error; err == gorm.RecordNotFound {
 		return fmt.Errorf("Chocolate with id %s does not exist", c.ID)
+	} else if err != nil {
+		return err
 	}
-	s.chocolates[c.ID] = &c
-
-	return nil
+	choc.Name = c.Name
+	choc.Taste = c.Taste
+	s.db.Save(&choc)
+	return s.db.Error
 }
