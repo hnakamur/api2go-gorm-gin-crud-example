@@ -20,7 +20,10 @@ type UserResource struct {
 // FindAll to satisfy api2go data source interface
 func (s UserResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 	var result []model.User
-	users := s.UserStorage.GetAll()
+	users, err := s.UserStorage.GetAll()
+	if err != nil {
+		return &Response{}, err
+	}
 
 	for _, user := range users {
 		// get all sweets for the user
@@ -51,7 +54,10 @@ func (s UserResource) PaginatedFindAll(r api2go.Request) (uint, api2go.Responder
 		number, size, offset, limit string
 		keys                        []int64
 	)
-	users := s.UserStorage.GetAll()
+	users, err := s.UserStorage.GetAll()
+	if err != nil {
+		return 0, &Response{}, err
+	}
 
 	for k := range users {
 		keys = append(keys, k)
@@ -141,8 +147,11 @@ func (s UserResource) Create(obj interface{}, r api2go.Request) (api2go.Responde
 		return &Response{}, api2go.NewHTTPError(errors.New("Invalid instance given"), "Invalid instance given", http.StatusBadRequest)
 	}
 
-	id := s.UserStorage.Insert(user)
-	err := user.SetID(id)
+	id, err := s.UserStorage.Insert(user)
+	if err != nil {
+		return &Response{}, api2go.NewHTTPError(errors.New("Faild to create a user"), "Faild to create a user", http.StatusInternalServerError)
+	}
+	err = user.SetID(id)
 	if err != nil {
 		return &Response{}, api2go.NewHTTPError(errors.New("Non-integer ID given"), "Non-integer ID given", http.StatusInternalServerError)
 	}

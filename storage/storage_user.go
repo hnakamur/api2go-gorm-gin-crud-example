@@ -19,16 +19,19 @@ type UserStorage struct {
 }
 
 // GetAll returns the user map (because we need the ID as key too)
-func (s UserStorage) GetAll() map[int64]*model.User {
+func (s UserStorage) GetAll() (map[int64]*model.User, error) {
 	var users []model.User
 	s.db.Find(&users)
+	if s.db.Error != nil {
+		return nil, s.db.Error
+	}
 
 	userMap := make(map[int64]*model.User)
 	for i, _ := range users {
 		u := &users[i]
 		userMap[u.ID] = u
 	}
-	return userMap
+	return userMap, nil
 }
 
 // GetOne user
@@ -57,15 +60,17 @@ func (s UserStorage) getOneWithAssociations(id int64) (model.User, error) {
 }
 
 // Insert a user
-func (s *UserStorage) Insert(c model.User) string {
+func (s *UserStorage) Insert(c model.User) (string, error) {
 	c.Chocolates = make([]model.Chocolate, len(c.ChocolatesIDs))
 	err := s.updateChocolatesByChocolatesIDs(&c)
 	if err != nil {
-		// TODO: return the error instead of panic
-		panic(err)
+		return "", err
 	}
 	s.db.Create(&c)
-	return c.GetID()
+	if s.db.Error != nil {
+		return "", s.db.Error
+	}
+	return c.GetID(), nil
 }
 
 // Delete one :(
