@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"strings"
 
+	"github.com/jinzhu/gorm"
 	"github.com/manyminds/api2go"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/resource"
@@ -17,14 +18,25 @@ import (
 // environment. That is because we run all the specs randomized.
 var _ = Describe("CrudExample", func() {
 	var rec *httptest.ResponseRecorder
+	var db *gorm.DB
 
 	BeforeEach(func() {
 		api = api2go.NewAPIWithBaseURL("v0", "http://localhost:31415")
-		userStorage := storage.NewUserStorage()
-		chocStorage := storage.NewChocolateStorage()
+		var err error
+		db, err = storage.InitDB()
+		if err != nil {
+			panic(err)
+		}
+		userStorage := storage.NewUserStorage(db)
+		chocStorage := storage.NewChocolateStorage(db)
 		api.AddResource(model.User{}, resource.UserResource{ChocStorage: chocStorage, UserStorage: userStorage})
 		api.AddResource(model.Chocolate{}, resource.ChocolateResource{ChocStorage: chocStorage, UserStorage: userStorage})
 		rec = httptest.NewRecorder()
+	})
+	AfterEach(func() {
+		db.Exec("DROP TABLE chocolates")
+		db.Exec("DROP TABLE users")
+		db.Close()
 	})
 
 	var createUser = func() {
