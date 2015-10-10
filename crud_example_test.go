@@ -5,11 +5,11 @@ import (
 	"net/http/httptest"
 	"strings"
 
-	"github.com/jinzhu/gorm"
-	"github.com/manyminds/api2go"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/resource"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/storage"
+	"github.com/jinzhu/gorm"
+	"github.com/manyminds/api2go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

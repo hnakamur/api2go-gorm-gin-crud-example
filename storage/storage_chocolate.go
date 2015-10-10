@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/jinzhu/gorm"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
+	"github.com/jinzhu/gorm"
 )
 
 // NewChocolateStorage initializes the storage

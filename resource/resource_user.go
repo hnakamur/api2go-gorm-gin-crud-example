@@ -6,9 +6,9 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/manyminds/api2go"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/storage"
+	"github.com/manyminds/api2go"
 )
 
 // UserResource for api2go routes

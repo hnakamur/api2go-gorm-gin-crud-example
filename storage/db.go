@@ -4,9 +4,9 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
-	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 	_ "github.com/mattn/go-sqlite3"
 )
 
