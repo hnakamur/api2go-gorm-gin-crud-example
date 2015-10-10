@@ -5,11 +5,14 @@ import (
 	"net/http/httptest"
 	"strings"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/resource"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/storage"
 	"github.com/jinzhu/gorm"
+	_ "github.com/lib/pq"
 	"github.com/manyminds/api2go"
+	_ "github.com/mattn/go-sqlite3"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
