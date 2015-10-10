@@ -1,0 +1,21 @@
+language: go
+
+go:
+  - 1.4
+  - 1.5
+  - tip
+
+sudo: false
+
+install:
+  - go get -t -d -v ./...
+  - go get github.com/onsi/ginkgo/ginkgo
+  - go get -u github.com/golang/lint/golint
+  - go get -u github.com/modocache/gover
+  - go get -u github.com/mattn/goveralls
+
+script:
+  - ginkgo -r -cover --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race --progress
+  - rm api2go-gorm-gin-crud-example.coverprofile
+  - bash scripts/fmtpolice
+  - gover
