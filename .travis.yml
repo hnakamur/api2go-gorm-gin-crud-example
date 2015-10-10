@@ -19,3 +19,4 @@ script:
   - rm api2go-gorm-gin-crud-example.coverprofile
   - bash scripts/fmtpolice
   - gover
+  - goveralls -coverprofile=gover.coverprofile -repotoken adf07PEioYM33AKSGLlOEUk16rb2U8mrR
