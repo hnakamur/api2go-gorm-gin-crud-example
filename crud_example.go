@@ -42,8 +42,6 @@ Remove a sweet
 package main
 
 import (
-	"encoding/json"
-
 	"github.com/gin-gonic/gin"
 	"github.com/manyminds/api2go"
 	"github.com/manyminds/api2go-adapter/gingonic"
@@ -52,35 +50,12 @@ import (
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/storage"
 )
 
-// PrettyJSONContentMarshaler for JSON in a human readable format
-type PrettyJSONContentMarshaler struct{}
-
-// Marshal marshals to pretty JSON
-func (m PrettyJSONContentMarshaler) Marshal(i interface{}) ([]byte, error) {
-	return json.MarshalIndent(i, "", "    ")
-}
-
-// Unmarshal the JSON
-func (m PrettyJSONContentMarshaler) Unmarshal(data []byte, i interface{}) error {
-	return json.Unmarshal(data, i)
-}
-
-// MarshalError to configure error marshaling
-func (m PrettyJSONContentMarshaler) MarshalError(err error) string {
-	jsonmarshaler := api2go.JSONContentMarshaler{}
-	return jsonmarshaler.MarshalError(err)
-}
-
 func main() {
-	marshalers := map[string]api2go.ContentMarshaler{
-		"application/vnd.api+json": PrettyJSONContentMarshaler{},
-	}
-
 	r := gin.Default()
 	api := api2go.NewAPIWithRouting(
 		"v0",
 		api2go.NewStaticResolver("/"),
-		marshalers,
+		api2go.DefaultContentMarshalers,
 		gingonic.New(r),
 	)
 
