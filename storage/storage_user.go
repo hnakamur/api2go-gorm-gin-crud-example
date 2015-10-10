@@ -27,7 +27,7 @@ func (s UserStorage) GetAll() (map[int64]*model.User, error) {
 	}
 
 	userMap := make(map[int64]*model.User)
-	for i, _ := range users {
+	for i := range users {
 		u := &users[i]
 		userMap[u.ID] = u
 	}
