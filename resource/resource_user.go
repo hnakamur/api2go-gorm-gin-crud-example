@@ -38,24 +38,25 @@ func (s UserResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 	return &Response{Res: result}, nil
 }
 
+type byInt64Slice []int64
+
+func (a byInt64Slice) Len() int           { return len(a) }
+func (a byInt64Slice) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byInt64Slice) Less(i, j int) bool { return a[i] < a[j] }
+
 // PaginatedFindAll can be used to load users in chunks
 func (s UserResource) PaginatedFindAll(r api2go.Request) (uint, api2go.Responder, error) {
 	var (
 		result                      []model.User
 		number, size, offset, limit string
-		keys                        []int
+		keys                        []int64
 	)
 	users := s.UserStorage.GetAll()
 
 	for k := range users {
-		i, err := strconv.ParseInt(k, 10, 64)
-		if err != nil {
-			return 0, &Response{}, err
-		}
-
-		keys = append(keys, int(i))
+		keys = append(keys, k)
 	}
-	sort.Ints(keys)
+	sort.Sort(byInt64Slice(keys))
 
 	numberQuery, ok := r.QueryParams["page[number]"]
 	if ok {
@@ -90,7 +91,7 @@ func (s UserResource) PaginatedFindAll(r api2go.Request) (uint, api2go.Responder
 			if i >= uint64(len(users)) {
 				break
 			}
-			result = append(result, *users[strconv.FormatInt(int64(keys[i]), 10)])
+			result = append(result, *users[keys[i]])
 		}
 	} else {
 		limitI, err := strconv.ParseUint(limit, 10, 64)
@@ -107,7 +108,7 @@ func (s UserResource) PaginatedFindAll(r api2go.Request) (uint, api2go.Responder
 			if i >= uint64(len(users)) {
 				break
 			}
-			result = append(result, *users[strconv.FormatInt(int64(keys[i]), 10)])
+			result = append(result, *users[keys[i]])
 		}
 	}
 
@@ -141,7 +142,10 @@ func (s UserResource) Create(obj interface{}, r api2go.Request) (api2go.Responde
 	}
 
 	id := s.UserStorage.Insert(user)
-	user.ID = id
+	err := user.SetID(id)
+	if err != nil {
+		return &Response{}, api2go.NewHTTPError(errors.New("Non-integer ID given"), "Non-integer ID given", http.StatusInternalServerError)
+	}
 
 	return &Response{Res: user, Code: http.StatusCreated}, nil
 }

@@ -2,13 +2,14 @@ package model
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/manyminds/api2go/jsonapi"
 )
 
 // User is a generic database user
 type User struct {
-	ID string `jsonapi:"-"`
+	ID int64 `jsonapi:"-"`
 	//rename the username field to user-name.
 	Username      string       `jsonapi:"name=user-name"`
 	PasswordHash  string       `jsonapi:"-"`
@@ -19,13 +20,14 @@ type User struct {
 
 // GetID to satisfy jsonapi.MarshalIdentifier interface
 func (u User) GetID() string {
-	return u.ID
+	return strconv.FormatInt(u.ID, 10)
 }
 
 // SetID to satisfy jsonapi.UnmarshalIdentifier interface
 func (u *User) SetID(id string) error {
-	u.ID = id
-	return nil
+	var err error
+	u.ID, err = strconv.ParseInt(id, 10, 64)
+	return err
 }
 
 // GetReferences to satisfy the jsonapi.MarshalReferences interface
@@ -43,7 +45,7 @@ func (u User) GetReferencedIDs() []jsonapi.ReferenceID {
 	result := []jsonapi.ReferenceID{}
 	for _, chocolate := range u.Chocolates {
 		result = append(result, jsonapi.ReferenceID{
-			ID:   chocolate.ID,
+			ID:   chocolate.GetID(),
 			Type: "chocolates",
 			Name: "sweets",
 		})

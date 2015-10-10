@@ -56,7 +56,10 @@ func (c ChocolateResource) Create(obj interface{}, r api2go.Request) (api2go.Res
 	}
 
 	id := c.ChocStorage.Insert(choc)
-	choc.ID = id
+	err := choc.SetID(id)
+	if err != nil {
+		return &Response{}, api2go.NewHTTPError(errors.New("Non-integer ID given"), "Non-integer ID given", http.StatusInternalServerError)
+	}
 	return &Response{Res: choc, Code: http.StatusCreated}, nil
 }
 

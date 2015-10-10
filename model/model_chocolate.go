@@ -1,19 +1,22 @@
 package model
 
+import "strconv"
+
 // Chocolate is the chocolate that a user consumes in order to get fat and happy
 type Chocolate struct {
-	ID    string `jsonapi:"-"`
+	ID    int64 `jsonapi:"-"`
 	Name  string
 	Taste string
 }
 
 // GetID to satisfy jsonapi.MarshalIdentifier interface
 func (c Chocolate) GetID() string {
-	return c.ID
+	return strconv.FormatInt(c.ID, 10)
 }
 
 // SetID to satisfy jsonapi.UnmarshalIdentifier interface
 func (c *Chocolate) SetID(id string) error {
-	c.ID = id
-	return nil
+	var err error
+	c.ID, err = strconv.ParseInt(id, 10, 64)
+	return err
 }

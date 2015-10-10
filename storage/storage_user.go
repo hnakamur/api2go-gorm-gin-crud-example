@@ -2,29 +2,34 @@ package storage
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 )
 
 // NewUserStorage initializes the storage
 func NewUserStorage() *UserStorage {
-	return &UserStorage{make(map[string]*model.User), 1}
+	return &UserStorage{make(map[int64]*model.User), 1}
 }
 
 // UserStorage stores all users
 type UserStorage struct {
-	users   map[string]*model.User
-	idCount int
+	users   map[int64]*model.User
+	idCount int64
 }
 
 // GetAll returns the user map (because we need the ID as key too)
-func (s UserStorage) GetAll() map[string]*model.User {
+func (s UserStorage) GetAll() map[int64]*model.User {
 	return s.users
 }
 
 // GetOne user
 func (s UserStorage) GetOne(id string) (model.User, error) {
-	user, ok := s.users[id]
+	intID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return model.User{}, fmt.Errorf("User id must be integer: %s", id)
+	}
+	user, ok := s.users[intID]
 	if ok {
 		return *user, nil
 	}
@@ -34,20 +39,23 @@ func (s UserStorage) GetOne(id string) (model.User, error) {
 
 // Insert a user
 func (s *UserStorage) Insert(c model.User) string {
-	id := fmt.Sprintf("%d", s.idCount)
-	c.ID = id
-	s.users[id] = &c
+	c.ID = s.idCount
+	s.users[c.ID] = &c
 	s.idCount++
-	return id
+	return c.GetID()
 }
 
 // Delete one :(
 func (s *UserStorage) Delete(id string) error {
-	_, exists := s.users[id]
+	intID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return fmt.Errorf("User id must be integer: %s", id)
+	}
+	_, exists := s.users[intID]
 	if !exists {
 		return fmt.Errorf("User with id %s does not exist", id)
 	}
-	delete(s.users, id)
+	delete(s.users, intID)
 
 	return nil
 }

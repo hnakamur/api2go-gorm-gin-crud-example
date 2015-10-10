@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"sort"
+	"strconv"
 
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 )
@@ -19,19 +20,19 @@ func (c byID) Swap(i, j int) {
 }
 
 func (c byID) Less(i, j int) bool {
-	return c[i].GetID() < c[j].GetID()
+	return c[i].ID < c[j].ID
 }
 
 // NewChocolateStorage initializes the storage
 func NewChocolateStorage() *ChocolateStorage {
-	return &ChocolateStorage{make(map[string]*model.Chocolate), 1}
+	return &ChocolateStorage{make(map[int64]*model.Chocolate), 1}
 }
 
 // ChocolateStorage stores all of the tasty chocolate, needs to be injected into
 // User and Chocolate Resource. In the real world, you would use a database for that.
 type ChocolateStorage struct {
-	chocolates map[string]*model.Chocolate
-	idCount    int
+	chocolates map[int64]*model.Chocolate
+	idCount    int64
 }
 
 // GetAll of the chocolate
@@ -47,7 +48,11 @@ func (s ChocolateStorage) GetAll() []model.Chocolate {
 
 // GetOne tasty chocolate
 func (s ChocolateStorage) GetOne(id string) (model.Chocolate, error) {
-	choc, ok := s.chocolates[id]
+	intID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return model.Chocolate{}, fmt.Errorf("Chocolate id must be integer: %s", id)
+	}
+	choc, ok := s.chocolates[intID]
 	if ok {
 		return *choc, nil
 	}
@@ -57,20 +62,23 @@ func (s ChocolateStorage) GetOne(id string) (model.Chocolate, error) {
 
 // Insert a fresh one
 func (s *ChocolateStorage) Insert(c model.Chocolate) string {
-	id := fmt.Sprintf("%d", s.idCount)
-	c.ID = id
-	s.chocolates[id] = &c
+	c.ID = s.idCount
+	s.chocolates[c.ID] = &c
 	s.idCount++
-	return id
+	return c.GetID()
 }
 
 // Delete one :(
 func (s *ChocolateStorage) Delete(id string) error {
-	_, exists := s.chocolates[id]
+	intID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return fmt.Errorf("Chocolate id must be integer: %s", id)
+	}
+	_, exists := s.chocolates[intID]
 	if !exists {
 		return fmt.Errorf("Chocolate with id %s does not exist", id)
 	}
-	delete(s.chocolates, id)
+	delete(s.chocolates, intID)
 
 	return nil
 }
