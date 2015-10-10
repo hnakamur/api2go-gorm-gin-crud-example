@@ -43,13 +43,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"github.com/manyminds/api2go"
+	"github.com/manyminds/api2go-adapter/gingonic"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
-	"github.com/hnakamur/api2go-gorm-gin-crud-example/resolver"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/resource"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/storage"
 )
@@ -78,8 +76,14 @@ func main() {
 		"application/vnd.api+json": PrettyJSONContentMarshaler{},
 	}
 
-	port := 31415
-	api := api2go.NewAPIWithMarshalling("v0", &resolver.RequestURL{Port: port}, marshalers)
+	r := gin.Default()
+	api := api2go.NewAPIWithRouting(
+		"v0",
+		api2go.NewStaticResolver("/"),
+		marshalers,
+		gingonic.New(r),
+	)
+
 	db, err := storage.InitDB()
 	if err != nil {
 		panic(err)
@@ -90,12 +94,8 @@ func main() {
 	api.AddResource(model.User{}, resource.UserResource{ChocStorage: chocStorage, UserStorage: userStorage})
 	api.AddResource(model.Chocolate{}, resource.ChocolateResource{ChocStorage: chocStorage, UserStorage: userStorage})
 
-	fmt.Printf("Listening on :%d", port)
-	handler := api.Handler().(*httprouter.Router)
-	// It is also possible to get the instance of julienschmidt/httprouter and add more custom routes!
-	handler.GET("/hello-world", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		fmt.Fprint(w, "Hello World!\n")
+	r.GET("/ping", func(c *gin.Context) {
+		c.String(200, "pong")
 	})
-
-	http.ListenAndServe(fmt.Sprintf(":%d", port), handler)
+	r.Run(":31415") // listen and serve on 0.0.0.0:31415
 }
