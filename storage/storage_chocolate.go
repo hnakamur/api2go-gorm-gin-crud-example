@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/manyminds/api2go/examples/model"
+	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 )
 
 // sorting

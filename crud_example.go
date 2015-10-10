@@ -48,10 +48,10 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/manyminds/api2go"
-	"github.com/manyminds/api2go/examples/model"
-	"github.com/manyminds/api2go/examples/resolver"
-	"github.com/manyminds/api2go/examples/resource"
-	"github.com/manyminds/api2go/examples/storage"
+	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
+	"github.com/hnakamur/api2go-gorm-gin-crud-example/resolver"
+	"github.com/hnakamur/api2go-gorm-gin-crud-example/resource"
+	"github.com/hnakamur/api2go-gorm-gin-crud-example/storage"
 )
 
 // PrettyJSONContentMarshaler for JSON in a human readable format
