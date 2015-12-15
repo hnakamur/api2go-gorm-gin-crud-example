@@ -58,7 +58,6 @@ func main() {
 	api := api2go.NewAPIWithRouting(
 		"v0",
 		api2go.NewStaticResolver("/"),
-		api2go.DefaultContentMarshalers,
 		gingonic.New(r),
 	)
 
