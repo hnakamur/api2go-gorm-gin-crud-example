@@ -41,7 +41,8 @@ func (s UserStorage) GetAll() (map[int64]*model.User, error) {
 func (s UserStorage) GetOne(id string) (model.User, error) {
 	intID, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		return model.User{}, fmt.Errorf("User id must be integer: %s", id)
+		errMessage := fmt.Sprintf("User id must be integer: %s", id)
+		return model.User{}, api2go.NewHTTPError(errors.New(errMessage), errMessage, http.StatusBadRequest)
 	}
 	return s.getOneWithAssociations(intID)
 }
