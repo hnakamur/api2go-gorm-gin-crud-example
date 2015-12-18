@@ -4,9 +4,9 @@ import "strconv"
 
 // Chocolate is the chocolate that a user consumes in order to get fat and happy
 type Chocolate struct {
-	ID    int64 `jsonapi:"-"`
-	Name  string
-	Taste string
+	ID    int64  `json:"-"`
+	Name  string `json:"name"`
+	Taste string `json:"taste"`
 }
 
 // GetID to satisfy jsonapi.MarshalIdentifier interface

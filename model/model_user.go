@@ -9,12 +9,12 @@ import (
 
 // User is a generic database user
 type User struct {
-	ID int64 `jsonapi:"-"`
+	ID int64 `json:"-"`
 	//rename the username field to user-name.
-	Username      string      `jsonapi:"name=user-name"`
-	PasswordHash  string      `jsonapi:"-"`
-	Chocolates    []Chocolate `jsonapi:"-" gorm:"many2many:user_chocolates"`
-	ChocolatesIDs []string    `jsonapi:"-" sql:"-"`
+	Username      string      `json:"user-name"`
+	PasswordHash  string      `json:"-"`
+	Chocolates    []Chocolate `json:"-" gorm:"many2many:user_chocolates"`
+	ChocolatesIDs []string    `json:"-" sql:"-"`
 	exists        bool        `sql:"-"`
 }
 
