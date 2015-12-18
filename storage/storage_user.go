@@ -1,11 +1,14 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 	"github.com/jinzhu/gorm"
+	"github.com/manyminds/api2go"
 )
 
 // NewUserStorage initializes the storage
@@ -48,7 +51,8 @@ func (s UserStorage) getOneWithAssociations(id int64) (model.User, error) {
 	s.db.First(&user, id)
 	s.db.Model(&user).Related(&user.Chocolates, "Chocolates")
 	if err := s.db.Error; err == gorm.RecordNotFound {
-		return model.User{}, fmt.Errorf("User for id %d not found", id)
+		errMessage := fmt.Sprintf("User for id %s not found", id)
+		return model.User{}, api2go.NewHTTPError(errors.New(errMessage), errMessage, http.StatusNotFound)
 	} else if err != nil {
 		return model.User{}, err
 	}
@@ -134,6 +138,7 @@ func (s *UserStorage) updateChocolatesByChocolatesIDs(u *model.User) error {
 		if err != nil {
 			return err
 		}
+		// TODO: Fix N+1 query problem
 		s.db.First(&u.Chocolates[i], intID)
 	}
 	return nil
