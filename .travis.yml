@@ -1,9 +1,8 @@
 language: go
 
 go:
-  - 1.4.3
-  - 1.5.2
-  - tip
+  - 1.5.3
+  - 1.6rc2
 
 sudo: false
 
