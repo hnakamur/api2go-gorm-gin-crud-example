@@ -12,11 +12,13 @@ install:
   - go get github.com/onsi/ginkgo/ginkgo
   - go get -u github.com/golang/lint/golint
   - go get -u github.com/modocache/gover
+  - go get -u github.com/axw/gocov/gocov
   - go get -u github.com/mattn/goveralls
+  - if ! go get github.com/golang/tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
 
 script:
   - ginkgo -r -cover --randomizeAllSpecs --randomizeSuites --failOnPending --trace --race --progress
   - rm api2go-gorm-gin-crud-example.coverprofile
   - bash scripts/fmtpolice
   - gover
-  - goveralls -coverprofile=gover.coverprofile -repotoken adf07PEioYM33AKSGLlOEUk16rb2U8mrR
+  - goveralls -service=travis-ci -coverprofile=gover.coverprofile
