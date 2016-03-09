@@ -17,5 +17,5 @@ func InitDB() (*gorm.DB, error) {
 	//db.LogMode(true)
 	db.AutoMigrate(&model.User{}, &model.Chocolate{})
 
-	return &db, nil
+	return db, nil
 }

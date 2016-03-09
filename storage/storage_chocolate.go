@@ -34,7 +34,7 @@ func (s ChocolateStorage) GetOne(id string) (model.Chocolate, error) {
 	}
 	var choc model.Chocolate
 	s.db.First(&choc, intID)
-	if err := s.db.Error; err == gorm.RecordNotFound {
+	if err := s.db.Error; err == gorm.ErrRecordNotFound {
 		return model.Chocolate{}, fmt.Errorf("Chocolate for id %s not found", id)
 	}
 	return choc, nil
@@ -55,7 +55,7 @@ func (s *ChocolateStorage) Delete(id string) error {
 
 	var choc model.Chocolate
 	s.db.First(&choc, intID)
-	if err := s.db.Error; err == gorm.RecordNotFound {
+	if err := s.db.Error; err == gorm.ErrRecordNotFound {
 		return fmt.Errorf("Chocolate with id %s does not exist", id)
 	}
 	s.db.Delete(&choc)
@@ -67,7 +67,7 @@ func (s *ChocolateStorage) Delete(id string) error {
 func (s *ChocolateStorage) Update(c model.Chocolate) error {
 	var choc model.Chocolate
 	s.db.First(&choc, c.ID)
-	if err := s.db.Error; err == gorm.RecordNotFound {
+	if err := s.db.Error; err == gorm.ErrRecordNotFound {
 		return fmt.Errorf("Chocolate with id %s does not exist", c.ID)
 	} else if err != nil {
 		return err

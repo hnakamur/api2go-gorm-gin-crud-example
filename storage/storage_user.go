@@ -51,7 +51,7 @@ func (s UserStorage) getOneWithAssociations(id int64) (model.User, error) {
 	var user model.User
 	s.db.First(&user, id)
 	s.db.Model(&user).Related(&user.Chocolates, "Chocolates")
-	if err := s.db.Error; err == gorm.RecordNotFound {
+	if err := s.db.Error; err == gorm.ErrRecordNotFound {
 		errMessage := fmt.Sprintf("User for id %s not found", id)
 		return model.User{}, api2go.NewHTTPError(errors.New(errMessage), errMessage, http.StatusNotFound)
 	} else if err != nil {
@@ -87,7 +87,7 @@ func (s *UserStorage) Delete(id string) error {
 
 	var user model.User
 	s.db.First(&user, intID)
-	if err := s.db.Error; err == gorm.RecordNotFound {
+	if err := s.db.Error; err == gorm.ErrRecordNotFound {
 		return fmt.Errorf("User with id %s does not exist", id)
 	}
 	s.db.Delete(&user)
