@@ -21,4 +21,3 @@ script:
   - rm api2go-gorm-gin-crud-example.coverprofile
   - bash scripts/fmtpolice
   - gover
-  - goveralls -service=travis-ci -coverprofile=gover.coverprofile
