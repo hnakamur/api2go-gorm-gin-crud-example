@@ -16,7 +16,6 @@ func (c Chocolate) GetID() string {
 
 // SetID to satisfy jsonapi.UnmarshalIdentifier interface
 func (c *Chocolate) SetID(id string) error {
-	var err error
-	c.ID, err = strconv.ParseInt(id, 10, 64)
-	return err
+	c.ID, _ = strconv.ParseInt(id, 10, 64)
+	return nil
 }
