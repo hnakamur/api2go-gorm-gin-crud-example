@@ -43,7 +43,6 @@ Remove a sweet
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/model"
 	"github.com/hnakamur/api2go-gorm-gin-crud-example/resource"
@@ -52,6 +51,7 @@ import (
 	"github.com/manyminds/api2go"
 	"github.com/manyminds/api2go-adapter/gingonic"
 	_ "github.com/mattn/go-sqlite3"
+	gin "gopkg.in/gin-gonic/gin.v1"
 )
 
 func main() {

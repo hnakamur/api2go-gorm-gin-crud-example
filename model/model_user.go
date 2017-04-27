@@ -25,9 +25,8 @@ func (u User) GetID() string {
 
 // SetID to satisfy jsonapi.UnmarshalIdentifier interface
 func (u *User) SetID(id string) error {
-	var err error
-	u.ID, err = strconv.ParseInt(id, 10, 64)
-	return err
+	u.ID, _ = strconv.ParseInt(id, 10, 64)
+	return nil
 }
 
 // GetReferences to satisfy the jsonapi.MarshalReferences interface
@@ -68,6 +67,7 @@ func (u User) GetReferencedStructs() []jsonapi.MarshalIdentifier {
 func (u *User) SetToManyReferenceIDs(name string, IDs []string) error {
 	if name == "sweets" {
 		u.ChocolatesIDs = IDs
+		return nil
 	}
 
 	return errors.New("There is no to-many relationship with the name " + name)
@@ -77,6 +77,7 @@ func (u *User) SetToManyReferenceIDs(name string, IDs []string) error {
 func (u *User) AddToManyIDs(name string, IDs []string) error {
 	if name == "sweets" {
 		u.ChocolatesIDs = append(u.ChocolatesIDs, IDs...)
+		return nil
 	}
 
 	return errors.New("There is no to-many relationship with the name " + name)
@@ -93,6 +94,7 @@ func (u *User) DeleteToManyIDs(name string, IDs []string) error {
 				}
 			}
 		}
+		return nil
 	}
 
 	return errors.New("There is no to-many relationship with the name " + name)
